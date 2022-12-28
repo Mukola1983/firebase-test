@@ -1,15 +1,19 @@
-import React from "react";
+import React, {useContext} from "react";
 import {Link, useHistory} from "react-router-dom";
 import {AppBar, Button, IconButton, Typography} from "@material-ui/core";
 import {auth}  from "../firebase";
 import {useAuthState} from "react-firebase-hooks/auth";
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import {signOut} from "firebase/auth"
+import {AppContext} from "../App";
 
 
 const Navbar = () => {
 
     const history = useHistory();
+
+    const {values, setValues} = useContext(AppContext);
+
 
     const [user, loading, error] = useAuthState(auth);
 
@@ -17,6 +21,12 @@ const Navbar = () => {
         await signOut(auth)
     }
 
+    const openDialog = () =>{
+        setValues(prev =>({
+            ...prev,
+            openDialog: true
+        }))
+    }
     return (
         <AppBar position="static" >
             <div  style={{display: "flex", justifyContent: "space-between"}}>
@@ -24,11 +34,6 @@ const Navbar = () => {
                     <div style={{marginRight: "10px"}}>
                         <Button size={"small"} variant={"contained"} color={"secondary"} onClick={()=> history.push("/")} >
                             Home
-                        </Button>
-                    </div>
-                    <div style={{marginRight: "10px"}}>
-                        <Button size={"small"} variant={"contained"} color={"secondary"}  onClick={()=> history.push("/login")} >
-                            Login
                         </Button>
                     </div>
                     <div style={{marginRight: "10px"}}>
@@ -53,6 +58,13 @@ const Navbar = () => {
                         <IconButton onClick={handleSignOut}>
                             <ExitToAppIcon color={"secondary"}/>
                         </IconButton>
+                    </div>
+                }
+                {!user &&
+                    <div style={{padding: "10px 40px"}}>
+                        <Button variant={"contained"} size={"small"} color={"secondary"} onClick={openDialog}>
+                            LogIn
+                        </Button>
                     </div>
                 }
             </div>
