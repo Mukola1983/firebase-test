@@ -5,6 +5,8 @@ import {getAuth, GoogleAuthProvider} from "firebase/auth"
 import {getFirestore} from "firebase/firestore"
 
 
+// firebase hosting:clone SOURCE_SITE_ID:test-01-dd84c TARGET_SITE_ID:live
+
 const firebaseConfig = {
     apiKey: "AIzaSyAAZf1InnAN_S3EtHrtZ-LlEI69r0LX-QE",
     authDomain: "test-01-dd84c.firebaseapp.com",

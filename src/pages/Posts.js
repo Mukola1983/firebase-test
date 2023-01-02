@@ -1,17 +1,35 @@
-import React, {useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import {Button, Paper, TextField, Typography} from "@material-ui/core";
-import {auth, provider, db} from "../firebase";
+import {auth, provider, db, storage} from "../firebase";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import {addDoc, collection} from "firebase/firestore"
+import {ref, uploadBytes} from "firebase/storage";
+import {v4} from "uuid";
+import {AppContext} from "../App";
 
 
 
 const Posts = () => {
 
     const [user, loading, error] = useAuthState(auth);
+    const {values, setValues} = useContext(AppContext);
+
 
     const [value, setValue] = useState({})
-    const [check, setCheck] = useState(false)
+    const [check, setCheck] = useState(false);
+    const[imgToSend, setImgToSend] = useState([]);
+    const[images, setImages] = useState([])
+
+    const reFF = useRef(null);
+
+    function handler(e) {
+        const img = e.target.files[0]
+        let url = URL.createObjectURL(img);
+        setImgToSend(prev => ([...prev, img]))
+
+        setImages(prev => ([...prev,url ]))
+    }
+
 
     const handleVal = (name, val) => {
         if(!check){
@@ -25,23 +43,60 @@ const Posts = () => {
 
     const postsRef = collection(db, "posts")
 
-    const createPost = async () =>{
+    const createPost = async () => {
+        let metadata = [];
+        for(let i = 0; i < imgToSend.length; i++ ){
+            const imageRef = ref(storage,`images/${imgToSend[i].name + v4()}`);
+            const imgRes = await uploadBytes(imageRef, imgToSend[i])
+
+            metadata.push(imgRes.metadata.fullPath)
+        }
+
         if(value?.title && value?.description){
             const data = {
                 title: value.title,
+                images: metadata,
                 description: value.description,
                 userId: user?.uid,
                 userName: user?.displayName,
                 userImg: user?.photoURL
             }
-            const res = await addDoc(postsRef, data)
+            await addDoc(postsRef, data)
         }
+
+        setValues(prev =>({
+            ...prev,
+            openDialog: false
+        }))
     }
 
 
     return (
         <div style={{padding: "30px 100px"}}>
             <Paper style={{height: "60vh", padding: "40px"}}>
+                <div style={{display: "flex", alignItems: "center", justifyContent: "space-around"}}>
+                    <div >
+                        <input
+                            style={{display: "none"}}
+                            type="file"
+                            onChange={(e)=> handler(e)}
+                            ref={reFF}
+                        />
+                        <Button onClick={()=> reFF?.current?.click()} variant={"contained"} color={"primary"} size={"small"}>
+                            Add Image
+                        </Button>
+                    </div>
+                    { images.map(el =>(
+                        <div style={{width: "100px", height: "100px", border: "1px dotted grey"}}>
+                        <img src={el} alt={'icon'} style={{width: "100%" , height: "100%"}} />
+                        </div>
+                        ))
+                    }
+                    {/*<div style={{width: "100px", height: "100px", border: "1px dotted grey"}}>*/}
+                    {/*    <img src={image} alt={'icon'} style={{width: "100%" , height: "100%"}} />*/}
+                    {/*</div>*/}
+                </div>
+
                 <div>
                     <div style={{marginBottom: "10px"}}>
                         <TextField

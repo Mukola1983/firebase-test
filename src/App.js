@@ -15,7 +15,8 @@ function App() {
 
     const [values, setValues] = useState({
         openDialog: false,
-        dialogComponent: <Login/>
+        dialogComponent: <Login/>,
+        dialogTitle: "Реєстрація"
     })
 
 
@@ -31,12 +32,12 @@ function App() {
               <div>
                   <Navbar/>
               </div>
-              <DialogComponent title={'Реєстрація'}  dialog={values.openDialog}
+              <DialogComponent title={values.dialogTitle}  dialog={values.openDialog}
                                closeDialog={handleDialog} Component={values.dialogComponent}/>
           <Switch>
               <Route path={"/"} exact component={Main}/>
               <Route path={"/login"}  component={Login}/>
-              <Route path={"/images"}  component={ImagesInput}/>
+              {/*<Route path={"/images"}  component={ImagesInput}/>*/}
               <Route path={"/posts"}  component={Posts}/>
           </Switch>
           </AppContext.Provider>

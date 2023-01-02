@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from "react";
 import {Button, IconButton, Typography} from "@material-ui/core";
 import {addDoc, collection, getDocs, query, where, deleteDoc, doc} from "firebase/firestore";
-import {auth, db} from "../../firebase";
+import {ref, getDownloadURL } from "firebase/storage";
+import {auth, db, storage} from "../../firebase";
 import {useAuthState} from "react-firebase-hooks/auth";
 
 
@@ -12,7 +13,18 @@ const Post = ({post}) =>{
 
     const [likes, setLikes] = useState([])
 
+    const [image, setImage] = useState('')
+    const [images, setImages] = useState([])
+
     const likesRef = collection(db, "likes")
+
+    // console.log(post)
+    //
+    // const pathReference = ref(storage, post?.image);
+    //
+    // console.log(pathReference)
+
+
 
     const addLike = async () =>{
         if(!likes.some(el=> el.userId === user?.uid)) {
@@ -46,6 +58,22 @@ const Post = ({post}) =>{
         getLikes()
     },[]);
 
+    useEffect(() =>{
+        if(post?.images){
+            getImages()
+        }
+
+    },[post]);
+
+    const getImages = async () =>{
+        setImages([])
+        for(let i = 0; i < post?.images?.length; i++){
+            const img = await getDownloadURL(ref(storage, `${post?.images[i]}`));
+            setImages(prev => ([...prev, img]))
+        }
+    }
+
+
 
 
     return (
@@ -57,6 +85,13 @@ const Post = ({post}) =>{
             <Typography>
                 {post.description}
             </Typography>
+            <div style={{display: "flex"}}>
+                {images.length> 0 && images.map(el =>(
+                    <div style={{width: "50px" , height: "50px", margin: "0 5px"}}>
+                        <img src={el} alt={"img"} style={{width: "100%" , height: "100%"}}/>
+                    </div>
+                ))}
+            </div>
             <div style={{display: "flex", justifyContent: "center"}}>
                 {!likes.some(el => el.userId === user?.uid) &&
                     <Button size={"small"} onClick={addLike}>
