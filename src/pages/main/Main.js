@@ -22,7 +22,7 @@ const Main = () => {
 
     useEffect(() =>{
         handleGetDoc()
-    },[values.openDialog])
+    },[values.addPost])
 
     const handleGetDoc = async () =>{
         const res =await getDocs(postsRef)
@@ -48,7 +48,7 @@ const Main = () => {
                 </Button>
             }
             <Paper style={{width: "90vw", display: "flex", flexWrap: "wrap", padding: "10px"}}>
-                {posts.length >0  && posts.map(el =>(
+                {posts.length > 0  && posts.map(el =>(
                     <Post key={el.id} post={el}/>
                 ))}
             </Paper>

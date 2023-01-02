@@ -22,12 +22,24 @@ const Posts = () => {
 
     const reFF = useRef(null);
 
-    function handler(e) {
+    const openFile = () =>{
+        if(images.length < 5) {
+            reFF?.current?.click()
+        }else{
+            setValues(prev =>({
+                ...prev,
+                openAlert: true,
+                alertMassage: "Max count images 5!"
+            }))
+        }
+    }
+
+    const  addImageHandler = (e) => {
         const img = e.target.files[0]
         let url = URL.createObjectURL(img);
         setImgToSend(prev => ([...prev, img]))
 
-        setImages(prev => ([...prev,url ]))
+        setImages(prev => ([...prev, url]))
     }
 
 
@@ -66,35 +78,39 @@ const Posts = () => {
 
         setValues(prev =>({
             ...prev,
-            openDialog: false
+            openDialog: false,
+            addPost: !prev.addPost
         }))
     }
 
 
     return (
-        <div style={{padding: "30px 100px"}}>
-            <Paper style={{height: "60vh", padding: "40px"}}>
-                <div style={{display: "flex", alignItems: "center", justifyContent: "space-around"}}>
+        <div style={{padding: "20px"}}>
+            <Paper style={{height: "60vh", padding: "20px"}}>
+                <div style={{ marginBottom: "10px"}}>
                     <div >
                         <input
                             style={{display: "none"}}
                             type="file"
-                            onChange={(e)=> handler(e)}
+                            onChange={(e)=> addImageHandler(e)}
                             ref={reFF}
                         />
-                        <Button onClick={()=> reFF?.current?.click()} variant={"contained"} color={"primary"} size={"small"}>
+                        <Button onClick={()=> openFile()}
+                                variant={"contained"}
+                                color={"primary"} size={"small"}
+                                style={{marginBottom: "10px"}}
+                        >
                             Add Image
                         </Button>
                     </div>
-                    { images.map(el =>(
-                        <div style={{width: "100px", height: "100px", border: "1px dotted grey"}}>
-                        <img src={el} alt={'icon'} style={{width: "100%" , height: "100%"}} />
-                        </div>
+                    <div style={{display: "flex", alignItems: "center", flexWrap: "wrap", justifyContent: "space-around"}}>
+                        { images.map(el =>(
+                            <div style={{width: "70px", margin:"4px", height: "70px", border: "1px dotted grey"}}>
+                                <img src={el} alt={'icon'} style={{width: "100%" , height: "100%"}} />
+                            </div>
                         ))
-                    }
-                    {/*<div style={{width: "100px", height: "100px", border: "1px dotted grey"}}>*/}
-                    {/*    <img src={image} alt={'icon'} style={{width: "100%" , height: "100%"}} />*/}
-                    {/*</div>*/}
+                        }
+                    </div>
                 </div>
 
                 <div>

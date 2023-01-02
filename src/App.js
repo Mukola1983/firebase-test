@@ -7,6 +7,7 @@ import Login from "./pages/login/Login";
 import Navbar from "./pages/Navbar";
 import Posts from "./pages/Posts";
 import DialogComponent from "./shared/DialogComponent";
+import AlertComponent from "./shared/AlertComponent";
 
 
 export const AppContext = createContext(null);
@@ -16,7 +17,11 @@ function App() {
     const [values, setValues] = useState({
         openDialog: false,
         dialogComponent: <Login/>,
-        dialogTitle: "Реєстрація"
+        dialogTitle: "Реєстрація",
+        addPost: false,
+        openAlert: false,
+        alertType: "error",
+        alertMassage: ''
     })
 
 
@@ -29,6 +34,7 @@ function App() {
   return (
       <BrowserRouter>
           <AppContext.Provider value={{values, setValues}}>
+              <AlertComponent/>
               <div>
                   <Navbar/>
               </div>
