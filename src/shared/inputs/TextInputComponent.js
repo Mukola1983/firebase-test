@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from "react"
 import {MenuItem, TextField} from "@material-ui/core";
 
-const TextInputComponent = ({name, type='text', value, setVal, label, style='', multiline=true , minRows=1}) =>{
+const TextInputComponent = ({name, type='text', value, setVal, label, style='', multiline=false , minRows=1}) =>{
 
     useEffect(()=> {
         if(!value?.[name]) {

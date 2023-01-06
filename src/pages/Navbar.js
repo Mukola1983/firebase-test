@@ -36,19 +36,19 @@ const Navbar = () => {
                 <div style={{display: "flex",justifyContent: "space-between", padding: "10px "}}>
                     <div style={{marginRight: "10px"}}>
                         <Button size={"small"} variant={"contained"} color={"secondary"} onClick={()=> history.push("/")} >
-                            Home
+                            Головна
                         </Button>
                     </div>
-                    {/*<div style={{marginRight: "10px"}}>*/}
-                    {/*    <Button size={"small"} variant={"contained"} color={"secondary"}  onClick={()=> history.push("/posts")} >*/}
-                    {/*        CreatePost*/}
-                    {/*    </Button>*/}
-                    {/*</div>*/}
-                    {/*<div>*/}
-                    {/*    <Button size={"small"} variant={"contained"} color={"secondary"}  onClick={()=> history.push("/images")} >*/}
-                    {/*        images*/}
-                    {/*    </Button>*/}
-                    {/*</div>*/}
+                    <div style={{marginRight: "10px"}}>
+                        <Button size={"small"} variant={"contained"} color={"secondary"}  onClick={()=> history.push("/aboutUs")} >
+                            Про нас
+                        </Button>
+                    </div>
+                    <div>
+                        <Button size={"small"} variant={"contained"} color={"secondary"}  onClick={()=> history.push("/feedbacks")} >
+                            Відгуки
+                        </Button>
+                    </div>
                 </div>
                 {user &&
                     <div style={{display: "flex", alignItems: "center", padding: "10px"}}>

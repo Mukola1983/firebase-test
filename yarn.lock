@@ -2587,6 +2587,15 @@
     "@types/scheduler" "*"
     csstype "^3.0.2"
 
+"@types/react@^16.8.12":
+  version "16.14.34"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.14.34.tgz#d129324ffda312044e1c47aab18696e4ed493282"
+  integrity sha512-b99nWeGGReLh6aKBppghVqp93dFJtgtDOzc8NXM6hewD8PQ2zZG5kBLgbx+VJr7Q7WBMjHxaIl3dwpwwPIUgyA==
+  dependencies:
+    "@types/prop-types" "*"
+    "@types/scheduler" "*"
+    csstype "^3.0.2"
+
 "@types/resolve@1.17.1":
   version "1.17.1"
   resolved "https://registry.yarnpkg.com/@types/resolve/-/resolve-1.17.1.tgz#3afd6ad8967c77e4376c598a82ddd58f46ec45d6"
@@ -3182,6 +3191,13 @@ at-least-node@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
+
+auto-bind@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/auto-bind/-/auto-bind-2.1.1.tgz#8ae509671ecdfbd5009fc99b0f19ae9c3a2abf50"
+  integrity sha512-NUwV1i9D3vxxY1KnfZgSZ716d6ovY7o8LfOwLhGIPFBowIb6Ln6DBW64+jCqPzUznel2hRSkQnYQqvh7/ldw8A==
+  dependencies:
+    "@types/react" "^16.8.12"
 
 autoprefixer@^10.4.13:
   version "10.4.13"
@@ -6991,6 +7007,11 @@ mkdirp@~0.5.1:
   dependencies:
     minimist "^1.2.6"
 
+moment@^2.29.4:
+  version "2.29.4"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.4.tgz#3dbe052889fe7c1b2ed966fcb3a77328964ef108"
+  integrity sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==
+
 ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
@@ -8264,6 +8285,19 @@ react-is@^18.0.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-18.2.0.tgz#199431eeaaa2e09f86427efbb4f1473edb47609b"
   integrity sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==
 
+react-material-ui-carousel@^2.3.11:
+  version "2.3.11"
+  resolved "https://registry.yarnpkg.com/react-material-ui-carousel/-/react-material-ui-carousel-2.3.11.tgz#0523d4a97caa2fd7d21d803e165b9f3120fe7693"
+  integrity sha512-rsD9D2JLDBTfinaPy1+hcb7gunfdX7jmga7xESfRCCtLXzokOrkhmx4qMd8dZmYY42zc/HbYqLqg9E/d187lbw==
+  dependencies:
+    auto-bind "^2.1.1"
+    react-swipeable "^6.1.0"
+
+react-moment@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/react-moment/-/react-moment-1.1.2.tgz#a9b157c58ddd226a2f746e5ca43415b24a17b6af"
+  integrity sha512-lfb+shYXI2tXlQrNUpNr05/1D/kzFj8Isbfp89DQrpZk0fs2JIAnLHWETR0hQS9zvtzwLWlVv0wKLffbue5HoA==
+
 react-refresh@^0.11.0:
   version "0.11.0"
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.11.0.tgz#77198b944733f0f1f1a90e791de4541f9f074046"
@@ -8352,6 +8386,11 @@ react-scripts@5.0.1:
     workbox-webpack-plugin "^6.4.1"
   optionalDependencies:
     fsevents "^2.3.2"
+
+react-swipeable@^6.1.0:
+  version "6.2.2"
+  resolved "https://registry.yarnpkg.com/react-swipeable/-/react-swipeable-6.2.2.tgz#52ba570f3a7a90db7093094ec476f3d151f727d1"
+  integrity sha512-Oz7nSFrssvq2yvy05aNL3F+yBUqSvLsK6x1mu+rQFOpMdQVnt4izKt1vyjvvTb70q6GQOaSpaB6qniROW2MAzQ==
 
 react-transition-group@^4.4.0:
   version "4.4.5"

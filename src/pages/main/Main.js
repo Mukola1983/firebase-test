@@ -5,14 +5,30 @@ import {getDocs, collection} from "firebase/firestore"
 import {useAuthState} from "react-firebase-hooks/auth";
 import {auth, db} from "../../firebase";
 import {Button, IconButton, Paper, Typography} from "@material-ui/core";
-import Post from "./Post";
+import Item from "./items/Item";
 import {AppContext} from "../../App";
-import Posts from "../Posts";
+import CreateItem from "../createItem/CreateItem";
+import {makeStyles} from "@material-ui/core/styles";
 
 
 
+const useStyles = makeStyles((theme) => ({
+    postWrapper: {
+        width: "90vw",
+        display: "flex",
+        justifyContent: "space-around",
+        flexWrap: "wrap",
+        padding: "10px"
+    },
+    flexBox:{
+        padding: "10px",
+        flex: "0 0 40%"
+    }
+}))
 const Main = () => {
     const history = useHistory();
+
+    const cl = useStyles()
     const [user, loading, error] = useAuthState(auth);
     const {values, setValues} = useContext(AppContext);
 
@@ -25,7 +41,7 @@ const Main = () => {
     },[values.addPost])
 
     const handleGetDoc = async () =>{
-        const res =await getDocs(postsRef)
+        const res = await getDocs(postsRef)
         if(res) {
             setPosts(res.docs.map(el => ({...el.data(), id : el.id})))
         }
@@ -35,7 +51,7 @@ const Main = () => {
         setValues(prev =>({
             ...prev,
             openDialog: true,
-            dialogComponent: <Posts/>,
+            dialogComponent: <CreateItem/>,
             dialogTitle: "Create Post"
         }))
     }
@@ -47,9 +63,11 @@ const Main = () => {
                     CreatePost
                 </Button>
             }
-            <Paper style={{width: "90vw", display: "flex", flexWrap: "wrap", padding: "10px"}}>
+            <Paper className={cl.postWrapper} >
                 {posts.length > 0  && posts.map(el =>(
-                    <Post key={el.id} post={el}/>
+                    <div  key={el.id} className={cl.flexBox}>
+                        <Item post={el}/>
+                    </div>
                 ))}
             </Paper>
         </div>

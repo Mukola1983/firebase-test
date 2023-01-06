@@ -29,7 +29,7 @@ const DialogComponent = ({ dialog, closeDialog,title, Component}) => {
     const cl =useStyles()
 
     return (
-        <Dialog open={dialog}  TransitionComponent={Transition} scroll="paper">
+        <Dialog open={dialog}  TransitionComponent={Transition} fullWidth scroll="paper">
             <AppBar position="static" className={cl.appBar}>
                 <Typography variant="h4">
                     {title}
