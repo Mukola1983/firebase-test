@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from "react";
 import {Button, IconButton, Typography} from "@material-ui/core";
-import {addDoc, collection, getDocs, query, where, deleteDoc, doc} from "firebase/firestore";
-import {ref, getDownloadURL } from "firebase/storage";
+import {addDoc , collection, getDocs, query, where, deleteDoc, doc} from "firebase/firestore";
+import {ref, getDownloadURL , deleteObject } from "firebase/storage";
 import {auth, db, storage} from "../../../firebase";
 import {useAuthState} from "react-firebase-hooks/auth";
 import ThumbUpAltIcon from '@material-ui/icons/ThumbUpAlt';
@@ -10,7 +10,9 @@ import {AppContext} from "../../../App";
 import CarouselComponent from "../../../components/carousel/CarouselComponent";
 import AccordionComponent from "./AccordeonComponent";
 import {makeStyles} from "@material-ui/core/styles";
-
+import BackspaceIcon from '@material-ui/icons/Backspace';
+import EditIcon from '@material-ui/icons/Edit';
+import CreateItem from "../../createItem/CreateItem";
 
 const useStyles = makeStyles((theme) => ({
     title:{
@@ -79,6 +81,16 @@ const Item = ({post}) =>{
         await getLikes()
     }
 
+    const deleteDocument = async (id) =>{
+        await deleteDoc(doc(db, "items", id.id));
+        await deleteImages();
+        setValues(prev =>({
+            ...prev,
+            refreshItemsData: !prev.refreshItemsData
+        }))
+
+    }
+
     const likesDoc = query(likesRef,where("postId","==", post.id))
     const getLikes = async () => {
         const res = await getDocs(likesDoc);
@@ -100,12 +112,28 @@ const Item = ({post}) =>{
 
     },[post]);
 
+    const deleteImages = async () =>{
+        for(let i = 0; i < post?.images?.length; i++){
+           await deleteObject(ref(storage, `${post?.images[i]}`));
+        }
+    }
+
     const getImages = async () =>{
         setImages([])
         for(let i = 0; i < post?.images?.length; i++){
             const img = await getDownloadURL(ref(storage, `${post?.images[i]}`));
             setImages(prev => ([...prev, img]))
         }
+    }
+
+    const editItem = (post) =>{
+
+        setValues(prev =>({
+            ...prev,
+            openDialog: true,
+            dialogComponent: <CreateItem edit={true} post={post} imagesToEdit={images}/>,
+            dialogTitle: "Редагувати Товар"
+        }))
     }
 
     const ToltipTitle = ({arr}) =>{
@@ -121,8 +149,23 @@ const Item = ({post}) =>{
     }
 
 
+
     return (
         <div className={cl.box}>
+            {user &&
+            <div>
+                <LightTooltip title={"Видалити Товар!"}>
+                    <IconButton onClick={() => deleteDocument(post)}>
+                        <BackspaceIcon/>
+                    </IconButton>
+                </LightTooltip>
+                <LightTooltip title={"Редагувати Товар"}>
+                    <IconButton onClick={() => editItem(post)}>
+                        <EditIcon/>
+                    </IconButton>
+                </LightTooltip>
+            </div>
+            }
             <div className={cl.title}>
                 <Typography variant={"h3"} color={"primary"}>
                     {post.title}

@@ -42,7 +42,8 @@ function App() {
         addPost: false,
         openAlert: false,
         alertType: "error",
-        alertMassage: ''
+        alertMassage: '',
+        refreshItemsData: false
     })
 
 

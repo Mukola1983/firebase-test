@@ -18,11 +18,18 @@ const useStyles = makeStyles((theme) => ({
         display: "flex",
         justifyContent: "space-around",
         flexWrap: "wrap",
-        padding: "10px"
+        padding: "10px",
+        '@media (max-width: 680px)': {
+            padding: "0",
+            width: "100vw",
+        },
     },
     flexBox:{
         padding: "10px",
-        flex: "0 0 40%"
+        flex: "0 0 40%",
+        '@media (max-width: 680px)': {
+            flex: "0 0 80%",
+        },
     }
 }))
 const Main = () => {
@@ -34,11 +41,11 @@ const Main = () => {
 
     const [posts, setPosts] = useState([])
 
-    const postsRef = collection(db, "posts")
+    const postsRef = collection(db, "items")
 
     useEffect(() =>{
         handleGetDoc()
-    },[values.addPost])
+    },[values.addPost, values.refreshItemsData])
 
     const handleGetDoc = async () =>{
         const res = await getDocs(postsRef)
@@ -52,12 +59,12 @@ const Main = () => {
             ...prev,
             openDialog: true,
             dialogComponent: <CreateItem/>,
-            dialogTitle: "Create Post"
+            dialogTitle: "Створити товар"
         }))
     }
 
     return (
-        <div style={{ padding: "10px"}}>
+        <div >
             {user &&
                 <Button variant={"contained"} color={"primary"} onClick={openDialog}>
                     CreatePost

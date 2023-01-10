@@ -2,8 +2,8 @@ import React, {useContext, useEffect, useRef, useState} from "react";
 import {Button, Paper, TextField, Typography} from "@material-ui/core";
 import {auth, provider, db, storage} from "../../firebase";
 import { useAuthState } from 'react-firebase-hooks/auth';
-import {addDoc, collection} from "firebase/firestore"
-import {ref, uploadBytes} from "firebase/storage";
+import {addDoc,doc, updateDoc,collection} from "firebase/firestore"
+import {deleteObject, ref, uploadBytes} from "firebase/storage";
 import {v4} from "uuid";
 import {AppContext} from "../../App";
 import TextInputComponent from "../../shared/inputs/TextInputComponent";
@@ -21,10 +21,17 @@ const useStyles = makeStyles((theme) => ({
         alignItems: "center",
         flexWrap: "wrap",
         justifyContent: "space-around"
+    },
+    paperBox:{
+        minHeight: "60vh",
+        padding: "20px",
+        '@media (max-width: 680px)': {
+            padding: "5px",
+        },
     }
 }))
 
-const CreateItem = () => {
+const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
 
     const cl = useStyles()
 
@@ -51,8 +58,27 @@ const CreateItem = () => {
         }
     }
 
-    const removeImg = (id) =>{
+    useEffect(()=>{
+        if(edit && post){
+            setValue(post);
+            setEditImages(imagesToEdit)
+        }
+    },[])
 
+    const setEditImages = async (imgs) =>{
+        for(let i = 0; i < imgs.length; i++) {
+            const id = v4()
+            await setImages(prev => ([...prev, {img: imgs[i], id: id}]));
+            await setImgToSend(prev => ([...prev, {img: post?.images[i], id:id}]));
+
+        }
+    }
+
+    const removeImg = async (id) =>{
+        if(edit){
+            const del = imgToSend.find(el =>el.id === id)
+            await deleteObject(ref(storage, del.img));
+        }
         const imgSend = imgToSend.filter(el => el.id !== id)
         const imgToShow = images.filter(el => el.id !== id)
         setImgToSend(imgSend);
@@ -92,17 +118,20 @@ const CreateItem = () => {
         }))
     }
 
-    const postsRef = collection(db, "posts")
+    const postsRef = collection(db, "items")
 
-    console.log(moment(Date.now()).format())
 
     const createPost = async () => {
         let metadata = [];
         for(let i = 0; i < imgToSend.length; i++ ){
-            const imageRef = ref(storage,`images/${imgToSend[i].img.name + v4()}`);
-            const imgRes = await uploadBytes(imageRef, imgToSend[i].img)
+            if(imgToSend[i].img && typeof imgToSend[i].img==="object") {
+                const imageRef = ref(storage, `images/${imgToSend[i].img.name + v4()}`);
+                const imgRes = await uploadBytes(imageRef, imgToSend[i].img)
 
-            metadata.push(imgRes.metadata.fullPath)
+                metadata.push(imgRes.metadata.fullPath)
+            }else{
+                metadata.push(imgToSend[i].img)
+            }
         }
 
         if(value?.title && value?.description){
@@ -116,7 +145,12 @@ const CreateItem = () => {
                 userName: user?.displayName,
                 userImg: user?.photoURL
             }
-            await addDoc(postsRef, data)
+            if(edit){
+                const updateRef = doc(db, "items", post.id);
+                await updateDoc(updateRef, data)
+            }else{
+                await addDoc(postsRef, data)
+            }
         }
 
         setValues(prev =>({
@@ -128,8 +162,8 @@ const CreateItem = () => {
 
 
     return (
-        <div style={{padding: "20px"}}>
-            <Paper style={{height: "60vh", padding: "20px"}}>
+        <div style={{padding: "10px"}}>
+            <Paper className={cl.paperBox}>
                 <div style={{ marginBottom: "10px"}}>
                     <div >
                         <input
@@ -165,7 +199,9 @@ const CreateItem = () => {
                         <TextInputComponent type={"number"} style={cl.input} value={value}  name={'price'} label={"Price"} setVal={handleVal} />
                     </div>
                     <div>
-                        <Button variant={"contained"} color={"primary"} onClick={createPost}>submit</Button>
+                        <Button variant={"contained"} color={"primary"} onClick={createPost}>
+                            {edit ?  "Редагувати" : "Створити"}
+                        </Button>
                     </div>
                 </div>
             </Paper>

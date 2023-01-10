@@ -25,11 +25,15 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
-const  CarouselComponent = ({images}) => {
+const  CarouselComponent = ({images, anim="slide", auto=false, indicators=true}) => {
 
     const cl = useStyles()
     return (
-        <Carousel autoPlay={false} animation={"slide"}>
+        <Carousel indicators={indicators}
+                  interval={5000}
+                  autoPlay={auto}
+                  animation={anim}
+        >
             {images && images.map(el =>(
                     <Paper style={{}}>
                         <div className={cl.imgBox}>
