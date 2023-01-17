@@ -28,14 +28,12 @@ const AccordionComponent = ({value}) => {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                 >
-                    <Typography className={classes.heading}>Description</Typography>
+                    <Typography className={classes.heading}>Опис товару</Typography>
                 </AccordionSummary>
                 <AccordionDetails >
-                    <Typography>
-                        <p >
+                        <div>
                             {value.description}
-                        </p>
-                    </Typography>
+                        </div>
                 </AccordionDetails>
             </Accordion>
         </div>

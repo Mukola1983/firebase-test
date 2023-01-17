@@ -43,6 +43,7 @@ const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
     const [check, setCheck] = useState(false);
     const[imgToSend, setImgToSend] = useState([]);
     const[images, setImages] = useState([])
+    const[load, setLoad] = useState(false)
 
     const reFF = useRef(null);
 
@@ -122,22 +123,25 @@ const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
 
 
     const createPost = async () => {
+        setLoad(true)
         let metadata = [];
         for(let i = 0; i < imgToSend.length; i++ ){
             if(imgToSend[i].img && typeof imgToSend[i].img==="object") {
                 const imageRef = ref(storage, `images/${imgToSend[i].img.name + v4()}`);
-                const imgRes = await uploadBytes(imageRef, imgToSend[i].img)
-
+                const imgRes = await uploadBytes(imageRef, imgToSend[i].img);
                 metadata.push(imgRes.metadata.fullPath)
             }else{
                 metadata.push(imgToSend[i].img)
             }
         }
 
+
+
         if(value?.title && value?.description){
             const data = {
                 title: value.title,
                 price: value.price,
+                discount: value.discount ? value?.discount : '',
                 images: metadata,
                 date:moment(Date.now()).format(),
                 description: value.description,
@@ -153,10 +157,11 @@ const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
             }
         }
 
+        setLoad(false)
         setValues(prev =>({
             ...prev,
             openDialog: false,
-            addPost: !prev.addPost
+            refreshItemsData: true
         }))
     }
 
@@ -190,16 +195,19 @@ const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
 
                 <div>
                     <div style={{marginBottom: "10px"}}>
-                        <TextInputComponent style={cl.input} value={value} name={'title'} label={"Title"} setVal={handleVal} />
+                        <TextInputComponent style={cl.input} value={value} name={'title'} label={"Назва товару"} setVal={handleVal} />
                     </div>
                     <div style={{marginBottom: "10px"}}>
-                        <TextInputComponent style={cl.input} value={value} multiline={true} name={'description'} label={"Description"} setVal={handleVal} />
+                        <TextInputComponent style={cl.input} value={value} multiline={true} name={'description'} label={"Опис"} setVal={handleVal} />
                     </div>
                     <div style={{marginBottom: "10px"}}>
-                        <TextInputComponent type={"number"} style={cl.input} value={value}  name={'price'} label={"Price"} setVal={handleVal} />
+                        <TextInputComponent type={"number"} style={cl.input} value={value}  name={'price'} label={"Ціна"} setVal={handleVal} />
+                    </div>
+                    <div style={{marginBottom: "10px"}}>
+                        <TextInputComponent type={"number"} style={cl.input} value={value}  name={'discount'} label={"Знижка"} setVal={handleVal} />
                     </div>
                     <div>
-                        <Button variant={"contained"} color={"primary"} onClick={createPost}>
+                        <Button disabled={load} variant={"contained"} color={"primary"} onClick={createPost}>
                             {edit ?  "Редагувати" : "Створити"}
                         </Button>
                     </div>

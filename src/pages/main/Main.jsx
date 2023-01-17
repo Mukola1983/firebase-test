@@ -1,6 +1,4 @@
 import React, {useContext, useEffect, useState} from "react";
-import Navbar from "../Navbar";
-import {useHistory} from "react-router-dom";
 import {getDocs, collection} from "firebase/firestore"
 import {useAuthState} from "react-firebase-hooks/auth";
 import {auth, db} from "../../firebase";
@@ -9,6 +7,7 @@ import Item from "./items/Item";
 import {AppContext} from "../../App";
 import CreateItem from "../createItem/CreateItem";
 import {makeStyles} from "@material-ui/core/styles";
+import {checkAdmin, handleGetDoc} from "../../shared/Utils";
 
 
 
@@ -33,26 +32,35 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 const Main = () => {
-    const history = useHistory();
 
     const cl = useStyles()
     const [user, loading, error] = useAuthState(auth);
     const {values, setValues} = useContext(AppContext);
 
-    const [posts, setPosts] = useState([])
-
-    const postsRef = collection(db, "items")
+    // const [posts, setPosts] = useState([])
 
     useEffect(() =>{
-        handleGetDoc()
-    },[values.addPost, values.refreshItemsData])
+        handleGetDoc(setValues,"orders", "orders");
+        setValues(prev =>({
+            ...prev,
+            refreshOrders: false
+        }))
+    },[values.refreshOrders])
 
-    const handleGetDoc = async () =>{
-        const res = await getDocs(postsRef)
-        if(res) {
-            setPosts(res.docs.map(el => ({...el.data(), id : el.id})))
+
+
+    useEffect(() =>{
+        if(values.refreshItemsData ||  !values.items.length > 0){
+            // handleGetDoc()
+            handleGetDoc(setValues, "items", "items")
+            setValues(prev =>({
+                ...prev,
+                refreshItemsData: false
+            }))
         }
-    }
+    },[values.refreshItemsData])
+
+
 
     const openDialog = () =>{
         setValues(prev =>({
@@ -65,13 +73,13 @@ const Main = () => {
 
     return (
         <div >
-            {user &&
+            {user && checkAdmin(user?.uid) &&
                 <Button variant={"contained"} color={"primary"} onClick={openDialog}>
-                    CreatePost
+                    Додати Товар
                 </Button>
             }
             <Paper className={cl.postWrapper} >
-                {posts.length > 0  && posts.map(el =>(
+                {values.items.length > 0  && values.items.map(el =>(
                     <div  key={el.id} className={cl.flexBox}>
                         <Item post={el}/>
                     </div>

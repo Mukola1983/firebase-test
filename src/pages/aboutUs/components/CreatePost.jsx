@@ -112,6 +112,8 @@ const CreatePost = ({edit=false, post=null, imagesToEdit=[]}) => {
             const data = {
                 title: value.title,
                 images: metadata,
+                link: value.link,
+                linkName: value.linkName,
                 date:moment(Date.now()).format(),
                 description: value.description,
                 userId: user?.uid,
@@ -129,7 +131,7 @@ const CreatePost = ({edit=false, post=null, imagesToEdit=[]}) => {
         setValues(prev =>({
             ...prev,
             openDialog: false,
-            addPost: !prev.addPost
+            refreshItemsData: true
         }))
     }
 
@@ -163,10 +165,16 @@ const CreatePost = ({edit=false, post=null, imagesToEdit=[]}) => {
 
                 <div>
                     <div style={{marginBottom: "10px"}}>
-                        <TextInputComponent style={cl.input} value={value} name={'title'} label={"Title"} setVal={handleVal} />
+                        <TextInputComponent style={cl.input} value={value} name={'title'} label={"Назва статті"} setVal={handleVal} />
                     </div>
                     <div style={{marginBottom: "10px"}}>
-                        <TextInputComponent style={cl.input} value={value} multiline={true} name={'description'} label={"Description"} setVal={handleVal} />
+                        <TextInputComponent style={cl.input} value={value} multiline={true} name={'description'} label={"Опис"} setVal={handleVal} />
+                    </div>
+                    <div style={{marginBottom: "10px"}}>
+                        <TextInputComponent style={cl.input} value={value} multiline={true} name={'link'} label={"Лінк"} setVal={handleVal} />
+                    </div>
+                    <div style={{marginBottom: "10px"}}>
+                        <TextInputComponent style={cl.input} value={value} multiline={true} name={'linkName'} label={"Назва лінку"} setVal={handleVal} />
                     </div>
                     <div>
                         <Button variant={"contained"} color={"primary"} onClick={createPost}>

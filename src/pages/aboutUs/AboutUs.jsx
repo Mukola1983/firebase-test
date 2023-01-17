@@ -9,6 +9,9 @@ import CreatePost from "./components/CreatePost";
 import {collection, getDocs} from "firebase/firestore";
 import Item from "../main/items/Item";
 import PostItem from "./components/PostItem";
+import Backdrop from "@material-ui/core/Backdrop";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import {checkAdmin, handleGetDoc} from "../../shared/Utils";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -30,20 +33,18 @@ const AboutUs = () =>{
     const cl = useStyles();
     const {values, setValues} = useContext(AppContext);
 
-    const [posts, setPosts] = useState([])
-
-    const postsRef = collection(db, "posts")
 
     useEffect(() =>{
-        handleGetDoc()
-    },[values.addPost, values.refreshItemsData])
-
-    const handleGetDoc = async () =>{
-        const res = await getDocs(postsRef)
-        if(res) {
-            setPosts(res.docs.map(el => ({...el.data(), id : el.id})))
+        if(values.refreshItemsData || !values.posts.length > 0) {
+            handleGetDoc(setValues,"posts","posts" )
+            setValues(prev =>({
+                ...prev,
+                refreshItemsData: false
+            }))
         }
-    }
+    },[ values.refreshItemsData])
+
+
 
 
 
@@ -57,13 +58,13 @@ const AboutUs = () =>{
     }
     return (
         <div className={cl.root}>
-            {user &&
+            {user && checkAdmin(user?.uid) &&
                 <Button variant={"contained"} color={"primary"} onClick={openDialog}>
                     Додати Статтю
                 </Button>
             }
             <Paper elevation={3} className={cl.paper}>
-                {posts.length > 0  && posts.map(el =>(
+                {values.posts.length > 0  && values.posts.map(el =>(
                     <div  key={el.id} className={cl.flexBox}>
                         <PostItem post={el}/>
                     </div>

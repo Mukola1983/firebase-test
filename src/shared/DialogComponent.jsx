@@ -8,17 +8,26 @@ import CancelPresentationIcon from '@material-ui/icons/CancelPresentation';
 import IconButton from "@material-ui/core/IconButton";
 
 const useStyles = makeStyles((theme) => ({
-    root: {
-        padding: theme.spacing(5),
-        paddingTop: theme.spacing(6),
+    root:{
+        backgroundColor: "rgba(180, 180, 180, 0.8)",
+        padding: "10px 15px",
+        '@media (max-width: 680px)': {
+            padding: "5px",
+        },
+        '@media (max-width: 480px)': {
+            padding: "0px",
+        }
     },
     appBar: {
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-around",
         alignItems: "center",
-        padding: "15px 0",
-        backgroundColor: theme.palette.primary.dark,
+        // padding: "15px 0",
+        // backgroundColor: theme.palette.primary.dark,
+        backgroundColor: "rgba(180, 180, 180, 0.9)",
+        padding: "10px 15px",
+
     },
     title: {
         fontSize: "45px",

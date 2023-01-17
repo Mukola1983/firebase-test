@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
-const  CarouselComponent = ({images, anim="slide", auto=false, indicators=true}) => {
+const  CarouselComponent = ({ handleFullImg, images, anim="slide", auto=false, indicators=true}) => {
 
     const cl = useStyles()
     return (
@@ -35,9 +35,9 @@ const  CarouselComponent = ({images, anim="slide", auto=false, indicators=true})
                   animation={anim}
         >
             {images && images.map(el =>(
-                    <Paper style={{}}>
+                    <Paper key={el} style={{}}>
                         <div className={cl.imgBox}>
-                            <img src={el} alt={"img"} className={cl.image}/>
+                            <img onClick={() => handleFullImg(el)} src={el} alt={"img"} className={cl.image}/>
                         </div>
                     </Paper>
                 ))

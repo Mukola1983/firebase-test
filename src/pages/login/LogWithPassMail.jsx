@@ -8,9 +8,29 @@ import {auth, provider} from "../../firebase";
 import {Button} from "@material-ui/core";
 import {useAuthState} from "react-firebase-hooks/auth";
 import {AppContext} from "../../App";
+import {makeStyles} from "@material-ui/core/styles";
+import Paper from "@material-ui/core/Paper";
 
 
-const LogWithPassMail = ({setOpen}) =>{
+const useStyles = makeStyles((theme) => ({
+
+    root: {
+        // backgroundColor: "rgba(180, 180, 180, 0.8)",
+        padding: "15px 25px",
+        // '@media (max-width: 680px)': {
+        //     padding: "5px",
+        // },
+        // '@media (max-width: 480px)': {
+        //     padding: "0px",
+        // }
+    },
+    input:{
+        margin: "10px 0"
+
+    }
+}))
+
+const LogWithPassMail = ({login = false}) =>{
 
     const [user, loading, error] = useAuthState(auth);
     const {values, setValues} = useContext(AppContext);
@@ -19,6 +39,8 @@ const LogWithPassMail = ({setOpen}) =>{
 
 
     const[value, setValue] = useState(null)
+
+    const cl = useStyles()
 
     const handleValue = (name, val) =>{
         setValue(prev =>({
@@ -47,34 +69,63 @@ const LogWithPassMail = ({setOpen}) =>{
     };
 
     const createUser = async () =>{
-        const useraa = await createUserWithEmailAndPassword(authT, value.email, value.password)
+        setLoading(true)
+        const user = await createUserWithEmailAndPassword(authT, value.email, value.password)
+            .catch(error => {
+                console.log(error)
+                setValues(prev =>({
+                    ...prev,
+                    openAlert: true,
+                    alertMassage: error.message
+                }))
+            })
+        if(user){
+            setValues(prev =>({
+                ...prev,
+                openDialog: false,
+                refreshOrders:true
+            }))
+        }
 
-        const mmm = await sendSignInLinkToEmail(authT, useraa.user.email, actionCodeSettings)
-
+        setLoading(false)
     }
     const signeUser = async () =>{
         setLoading(true)
-        const useraa = await signInWithEmailAndPassword(authT, value.email, value.password)
-            .catch(e => console.log(e))
-
+        const user = await signInWithEmailAndPassword(authT, value.email, value.password)
+            .catch(e => {
+                console.log(e)
+                setValues(prev =>({
+                    ...prev,
+                    openAlert: true,
+                    alertMassage: e.message
+                }))
+            })
+        if(user){
+            setValues(prev =>({
+                ...prev,
+                openDialog: false,
+                refreshOrders:true
+            }))
+        }
         setLoading(false)
-        setValues(prev =>({
-            ...prev,
-            openDialog: false
-        }))
     }
     return (
-        <div>
-            <div>
-                <TextInputComponent type={"email"} value={value} setVal={handleValue} name={'email'} label={"Email"} />
+        <Paper className={cl.root}>
+            <div className={cl.input}>
+                <TextInputComponent type={"email"} value={value} setVal={handleValue} name={'email'} label={"Email*"} />
             </div>
             <div>
-                <TextInputComponent type={"password"} value={value} setVal={handleValue} name={'password'} label={"Password"} />
+                <TextInputComponent type={"password"} value={value} setVal={handleValue} name={'password'} label={"Пароль*"} />
             </div>
             <div>
-                <Button variant={"contained"} onClick={signeUser} disabled={loadingF}>LogIn</Button>
+                {!login &&
+                    <Button variant={"contained"} onClick={createUser} disabled={loadingF}>Зареєструватись</Button>
+                }
+                {login &&
+                    <Button variant={"contained"} onClick={signeUser} disabled={loadingF}>Увійти</Button>
+                }
             </div>
-        </div>
+        </Paper>
     )
 }
 
