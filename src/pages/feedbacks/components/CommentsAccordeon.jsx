@@ -5,18 +5,19 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import AccordeonItem from "./AccordeonItem";
 
 const useStyles = makeStyles((theme) => ({
     root: {
-       // maxWidth: '100%',
+        // maxWidth: '100%',
         overflow: "hidden",
         padding:"5px"
         // backgroundColor: "rgba(180, 180, 180, 0.9)",
 
     },
     accord:{
-        backgroundColor: "rgba(180, 180, 180, 0.3)",
-        boxShadow: "0 0 5px grey"
+      //  backgroundColor: "rgba(180, 180, 180, 0.3)",
+        boxShadow: "0 0 2px grey"
     },
     heading: {
         fontSize: theme.typography.pxToRem(15),
@@ -24,10 +25,14 @@ const useStyles = makeStyles((theme) => ({
     },
     description: {
         fontWeight: "bold"
+    },
+    commentsBlock:{
+        display: "flex",
+        flexDirection: "column"
     }
 }));
 
-const AccordionComponent = ({value}) => {
+const CommentsAccordeon = ({comments, itemToRefresh='refreshFeedbacks'}) => {
     const classes = useStyles();
 
     return (
@@ -38,16 +43,18 @@ const AccordionComponent = ({value}) => {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                 >
-                    <Typography className={classes.heading}>Опис товару</Typography>
+                    <Typography className={classes.heading}>Коментарі ({comments.length})</Typography>
                 </AccordionSummary>
                 <AccordionDetails >
-                        <div className={classes.description}>
-                            {value.description}
-                        </div>
+                    <div style={{width: "100%"}}>
+                        {comments.length>0 && comments.map((el, ind)=>(
+                            <AccordeonItem key={el.id} ind={ind} item={el} itemToRefresh={itemToRefresh}/>
+                        ))}
+                    </div>
                 </AccordionDetails>
             </Accordion>
         </div>
     );
 }
 
-export default AccordionComponent
+export default CommentsAccordeon

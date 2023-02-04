@@ -24,6 +24,7 @@ import NavbarButton from "./NavbarButton";
 import DesctopButton from "./DesktopButton";
 import {checkAdmin} from "../../shared/Utils";
 import LocalGroceryStoreIcon from '@mui/icons-material/LocalGroceryStore';
+import GroupsIcon from '@mui/icons-material/Groups';
 
 const useStyles = makeStyles((theme) => ({
 
@@ -90,6 +91,8 @@ const Navbar = () => {
     const[drawer, setDrawer] = useState(false);
     const[nevOrders, setNewOrders] = useState(0);
 
+    const activeUser = localStorage.getItem("activeUser")? JSON.parse(localStorage.getItem("activeUser")):null
+
     useEffect(() =>{
         if(values.orders.length > 0){
 
@@ -115,6 +118,7 @@ const Navbar = () => {
             ...prev,
             refreshOrders:true
         }))
+        localStorage.setItem("activeUser", "")
     }
 
     const openDialog = () =>{
@@ -125,6 +129,8 @@ const Navbar = () => {
             dialogTitle: "Реєстрація"
         }))
     }
+
+    //UsersList
     return (
         <div className={cl.root} >
             <div className={cl.mobile}>
@@ -138,6 +144,10 @@ const Navbar = () => {
 
                     <NavbarButton handleChoose={handleChoose} icon={<LocalGroceryStoreIcon/>} title={"Мої замовлення"} way={"/localOrders"}/>
 
+                    {user && checkAdmin(user?.uid) &&
+                    <NavbarButton nevOrders={nevOrders} handleChoose={handleChoose}
+                                  icon={<GroupsIcon/>} title={"Клієнти"} way={"/users"}/>
+                    }
                     {user && checkAdmin(user?.uid) &&
                         <NavbarButton nevOrders={nevOrders} handleChoose={handleChoose}
                                   icon={<ProductionQuantityLimitsIcon/>} title={"Замовлення"} way={"/orders"}/>
@@ -180,6 +190,11 @@ const Navbar = () => {
                     <DesctopButton icon={<RateReviewIcon/>} title={"Відгуки"} way={"/feedbacks"} />
 
                     <DesctopButton icon={<LocalGroceryStoreIcon/>} title={"Мої замовлення"} way={"/localOrders"} />
+
+                    {user && checkAdmin(user?.uid) &&
+                    <DesctopButton icon={<GroupsIcon/>} nevOrders={nevOrders} title={"Клієнти"}
+                                   way={"/users"}/>
+                    }
                     {user && checkAdmin(user?.uid) &&
                     <DesctopButton icon={<ProductionQuantityLimitsIcon/>} nevOrders={nevOrders} title={"Замовлення"}
                                    way={"/orders"}/>
@@ -188,7 +203,8 @@ const Navbar = () => {
                 {user &&
                     <div style={{display: "flex", alignItems: "center", padding: "10px"}}>
                         <Typography>
-                            {user?.displayName ?user?.displayName : "Невідомо" }
+                            {/*{user?.displayName ? user?.displayName : "Невідомо" }*/}
+                            {user?.displayName || activeUser?.name }
                         </Typography>
                         {user?.photoURL &&
                             <img src={user?.photoURL} style={{

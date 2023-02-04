@@ -1,11 +1,12 @@
-import React, {useContext, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {Backdrop, Button, CircularProgress, Paper, Typography} from "@material-ui/core";
-import {auth, provider} from "../../firebase";
-import {signInWithPopup} from "firebase/auth"
+import {auth, db, provider} from "../../firebase";
+import {signInWithPopup, getAuth} from "firebase/auth"
 import { useAuthState } from 'react-firebase-hooks/auth';
 import {AppContext} from "../../App";
 import LogWithPassMail from "./LogWithPassMail";
 import {makeStyles} from "@material-ui/core/styles";
+import {addDoc, collection, getDocs, query, where} from "firebase/firestore";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -54,18 +55,61 @@ const Login = () => {
     const cl = useStyles()
 
 
-    const handleSignIn = async () => {
-        setOpen(true)
-        const res = await signInWithPopup(auth,provider);
-        if(res.user){
-            setValues(prev =>({
-                ...prev,
-                openDialog: false,
-                refreshOrders:true
-            }))
-        }
-        setOpen(false)
+    const setNewUser = async (user) => {
+        const userRef = collection(db, "users");
+        const userDoc = query(userRef, where("uiD", "==", user.uid))
+        const res = await getDocs(userDoc).catch(e => console.log(e));
+
+
+        return res.docs.map(el => ({...el.data(), id : el.id}))
     }
+
+    const handleSignIn = async () => {
+        if(!open) {
+            setOpen(true)
+            const res = await signInWithPopup(auth, provider);
+
+
+            if (res.user) {
+                const existUser = await setNewUser(res.user)
+
+                console.log(existUser)
+                console.log(res.user)
+
+                const data = {
+                    uiD: res?.user.uid,
+                    name: res?.user.displayName,
+                    photoURL: res?.user.photoURL,
+                    email: res?.user.email,
+                    phone: res?.user.phoneNumber,
+                    orders:[]
+                }
+                localStorage.setItem("activeUser", JSON.stringify(data))
+
+                if(!existUser?.length >0) {
+
+                    const userRef = collection(db, "users")
+                    await addDoc(userRef, data)
+                        .catch(e => {
+                            console.log(e)
+                            setValues(prev => ({
+                                ...prev,
+                                openAlert: true,
+                                alertMassage: e.message
+                            }))
+                        });
+                }
+
+                setValues(prev => ({
+                    ...prev,
+                    openDialog: false,
+                    refreshOrders: true
+                }))
+            }
+            setOpen(false)
+        }
+    }
+
 
     const logInHandle = () =>{
         setValues(prev =>({
@@ -96,8 +140,8 @@ const Login = () => {
                             <Typography variant={"h6"} color={"primary"}>
                                 Зареєструватись в один клік з Google
                             </Typography>
-                            <div disabled={open} className={cl.divButton}>
-                                <span className={cl.span} onClick={handleSignIn}>
+                            <div  className={cl.divButton}>
+                                <span  className={cl.span} onClick={handleSignIn}>
                                     Google
                                 </span>
                             </div>

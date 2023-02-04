@@ -20,6 +20,7 @@ const useStyles = makeStyles((theme) => ({
             backgroundColor: "rgba(192,192,192, 0.5)"
         }
     },
+
 }))
 
 const NavbarButton = ({handleChoose, way, icon, title , nevOrders=0}) =>{
@@ -37,9 +38,9 @@ const NavbarButton = ({handleChoose, way, icon, title , nevOrders=0}) =>{
                     {icon}
                 </>
             }
-            <Typography>
+            <p className={cl.title}>
                 {title}
-            </Typography>
+            </p>
         </div>
     )
 }

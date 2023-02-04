@@ -1,5 +1,5 @@
 import './App.css';
-import React, {createContext, useState} from "react";
+import React, {createContext, useEffect, useState} from "react";
 import {BrowserRouter, Route, Switch } from "react-router-dom";
 import Main from "./pages/main/Main";
 import Login from "./pages/login/Login";
@@ -23,6 +23,9 @@ import IconButton from "@material-ui/core/IconButton";
 import {LightTooltip} from "./shared/TooltipComponent";
 import BoxBricks from "./shared/images/boxBricks.png"
 import LocalOrders from "./pages/localOrders/LocalOrders";
+import Footer from "./pages/footer/Footer";
+import {useSpring, animated } from '@react-spring/web';
+import UsersList from "./pages/usersList/UsersList";
 
 
 export const AppContext = createContext(null);
@@ -67,7 +70,12 @@ function App() {
         loading: false,
         items:[],
         posts:[],
-        orders: []
+        orders: [],
+        contacts:[],
+        refreshContacts: false,
+        feedbacks: [],
+        refreshFeedbacks: false,
+        users:[]
     })
 
 
@@ -86,6 +94,41 @@ function App() {
             dialogTitle: "Створити Замовлення!"
         }))
     }
+
+    const [springs, api] = useSpring(() =>({
+        from: { y: 0 }
+        // to: { x: 100 },
+    }))
+
+
+    const handleClick = () => {
+        api.start({
+            from: {
+                y: 0,
+                scale: 1,
+                backgroundColor: "rgba(240, 240, 240, 0)"
+            },
+            to: {
+                y: -20,
+                scale: 1.3,
+                backgroundColor: "rgba(240, 240, 240, 1)"
+            },
+            loop:  { reverse: true },
+            config: {
+               // duration: 800,
+                mass: 3,
+                friction: 12,
+                tension: 200,
+            },
+        });
+    }
+
+
+
+
+    useEffect(() =>{
+        handleClick()
+    },[])
 
   return (
       <BrowserRouter>
@@ -106,19 +149,34 @@ function App() {
                       <Route path={"/aboutUs"}  component={AboutUs}/>
                       <Route path={"/feedbacks"}  component={Feedbacks}/>
                       <Route path={"/orders"}  component={OrdersBasket}/>
+                      <Route path={"/users"}  component={UsersList}/>
                       <Route path={"/localOrders"}  component={LocalOrders}/>
                   </Switch>
 
-                  <div  className={cl.addOrderButt}>
+                  <animated.div
+                      style={{
+                          position: "sticky",
+                          display: "inline-block",
+                          // width: "100%",
+                          bottom: "20px",
+                          borderRadius: "50%",
+                          left: "90%",
+                          zIndex: "20",
+                          ...springs
+                      }}>
                         <LightTooltip title={"Створити замовлення!"} >
-                            <IconButton variant={"contained"} color={"primary"} onClick={openDialog} >
+                            <IconButton variant={"contained"} color={"primary"}  onClick={openDialog} >
                                 <AddShoppingCartIcon style={{fontSize: "50px"}} />
                                 {/*<div style={{width: "50px", height: "50px"}}>*/}
                                 {/*    <img src={BoxBricks} alt={"icon"}  style={{width: "100%", height: "100%"}}/>*/}
                                 {/*</div>*/}
                             </IconButton>
                         </LightTooltip>
-                  </div>
+                  </animated.div>
+              </div>
+
+              <div>
+                  <Footer/>
               </div>
           </AppContext.Provider>
       </BrowserRouter>

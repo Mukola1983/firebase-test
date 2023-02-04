@@ -20,8 +20,17 @@ const useStyles = makeStyles((theme) => ({
         color: props => props.active ? "blue" : ""
     },
     button:{
-        marginLeft: "10px"
+        marginLeft: "10px",
+        fontSize: "20px",
+        '@media (max-width: 980px)': {
+            fontSize: "12px",
+        },
+        '@media (max-width: 880px)': {
+            fontSize: "10px",
+        },
+
     }
+
 }))
 
 const DesctopButton = ({way, icon, title, nevOrders=0}) =>{

@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useRef, useState} from "react";
 import {useAuthState} from "react-firebase-hooks/auth";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
-import {addDoc,doc, updateDoc,collection} from "firebase/firestore"
+import {addDoc, doc, updateDoc, collection, query, where, getDocs} from "firebase/firestore"
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import {ref, uploadBytes} from "firebase/storage";
 import {v4} from "uuid";
@@ -51,6 +51,7 @@ const CreateOrder = ({edit=false, post=null, imagesToEdit=[]}) => {
     const [check, setCheck] = useState(false);
     const [itemsList, setItemsList] = useState([]);
     const [totalSum, settotalSum] = useState(0)
+    const activeUser = localStorage.getItem("activeUser")? JSON.parse(localStorage.getItem("activeUser")):null
 
 
     useEffect(()=>{
@@ -105,7 +106,7 @@ const CreateOrder = ({edit=false, post=null, imagesToEdit=[]}) => {
             }))
 
 
-        if(true){
+        if(value.name && value.phone ){
             const data = {
                 note: value.note,
                 name: value.name,
@@ -118,34 +119,50 @@ const CreateOrder = ({edit=false, post=null, imagesToEdit=[]}) => {
                 userImg: user?.photoURL ? user?.photoURL : "",
                 items: orders,
                 totalSum: totalSum,
-                checked:false
+                checked:false,
+                finished: false,
             }
             if(edit){
                 // const updateRef = doc(db, "posts", post.id);
                 // await updateDoc(updateRef, data)
             }else{
-                console.log(data)
+                if(activeUser) {
+                    const userRef = collection(db, "users");
+                    const userDoc = query(userRef, where("uiD", "==", activeUser['uiD']))
+                    const res = await getDocs(userDoc).catch(e => console.log(e));
+
+                    const existUser = res.docs.map(el => ({...el.data(), id: el.id}))
+
+                    const updateRef = doc(db, "users", existUser[0].id);
+
+                    const userData = {
+                        ...activeUser,
+                        orders: [...existUser[0].orders, data]
+                    }
+                    await updateDoc(updateRef, userData)
+                }
+
                 const storageOrders = JSON.parse(localStorage.getItem("localOrders"))
                 const locOrders = storageOrders ? [...storageOrders, data] : [data]
                 localStorage.setItem("localOrders", JSON.stringify(locOrders))
                 const order = await addDoc(ordersRef, data).catch(e => console.log(e));
-                console.log(order)
                 if (order){
                     setValues(prev =>({
                         ...prev,
                         openAlert: true,
                         alertType: "success",
-                        alertMassage: "Замовлення створено!!"
+                        alertMassage: "Замовлення створено!!",
+                        openDialog: false,
                     }))
                 }
             }
+        }else{
+            setValues(prev =>({
+                ...prev,
+                openAlert: true,
+                alertMassage: "Потрібно вказати імя і номер телефону!"
+            }))
         }
-
-        setValues(prev =>({
-            ...prev,
-            openDialog: false,
-            // addPost: !prev.addPost
-        }))
     }
 
 
@@ -154,6 +171,9 @@ const CreateOrder = ({edit=false, post=null, imagesToEdit=[]}) => {
         <div style={{padding: "20px"}}>
             <Paper style={{minHeight: "60vh", padding: "20px"}}>
 
+                <div>
+                    <p> Можете залишити імя і телефон і ми вам передзвонимо)</p>
+                </div>
                 <div>
                     <div style={{marginBottom: "10px"}}>
                         <TextInputComponent style={cl.input} value={value} name={'name'} label={"Імя"} setVal={handleVal} />

@@ -8,6 +8,7 @@ const useStyles = makeStyles((theme) => ({
         width: "370px" ,
         height: "370px",
         margin: "0 auto",
+        // boxShadow: "0 0 20px grey",
         '@media (max-width: 980px)': {
             width: "300px" ,
             height: "300px",
@@ -21,7 +22,8 @@ const useStyles = makeStyles((theme) => ({
         width: "100%" ,
         height: "100%",
         objectFit: "contain",
-
+    },
+    paper: {
     }
 }))
 
@@ -35,9 +37,9 @@ const  CarouselComponent = ({ handleFullImg, images, anim="slide", auto=false, i
                   animation={anim}
         >
             {images && images.map(el =>(
-                    <Paper key={el} style={{}}>
+                    <Paper key={el} elevation={8}className={cl.paper}>
                         <div className={cl.imgBox}>
-                            <img onClick={() => handleFullImg(el)} src={el} alt={"img"} className={cl.image}/>
+                            <img onClick={() => handleFullImg(el.path)} src={el.path} alt={"img"} className={cl.image}/>
                         </div>
                     </Paper>
                 ))

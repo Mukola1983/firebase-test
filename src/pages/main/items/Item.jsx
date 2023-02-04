@@ -16,6 +16,10 @@ import CreateItem from "../../createItem/CreateItem";
 import {checkAdmin} from "../../../shared/Utils";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Backdrop from "@material-ui/core/Backdrop";
+import Paper from "@material-ui/core/Paper";
+import AddCommentComponent from "../../feedbacks/components/AddCommentComponent";
+import CommentsAccordeon from "../../feedbacks/components/CommentsAccordeon";
+import Rating from "@material-ui/lab/Rating";
 
 const useStyles = makeStyles((theme) => ({
     title:{
@@ -47,6 +51,17 @@ const useStyles = makeStyles((theme) => ({
         },
         '@media (max-width: 480px)': {
             // fontSize: "18px",
+            padding: "5px"
+        }
+    },
+    discountTitle: {
+        fontSize: "20px",
+        color: "white",
+        '@media (max-width: 680px)': {
+            fontSize: "18px",
+        },
+        '@media (max-width: 480px)': {
+            fontSize: "15px",
         }
     },
     box:{
@@ -82,10 +97,22 @@ const useStyles = makeStyles((theme) => ({
         height: "3px",
         backgroundColor:"red",
         boxShadow: "0 0 10px rgb(255, 165, 0),0 0 10px rgb(255, 165, 0)",
+        '@media (max-width: 680px)': {
+            fontSize: "18px",
+        },
+        '@media (max-width: 480px)': {
+            fontSize: "15px",
+        }
     },
     price: {
         fontSize: "20px",
-        color: "blue"
+        color: "blue",
+        '@media (max-width: 680px)': {
+            fontSize: "18px",
+        },
+        '@media (max-width: 480px)': {
+            fontSize: "15px",
+        }
     }
 }))
 
@@ -95,39 +122,33 @@ const Item = ({post}) =>{
     const [user, loading, error] = useAuthState(auth);
     const {values, setValues} = useContext(AppContext);
 
-    const [likes, setLikes] = useState([])
-    const [likesNames, setLikesNames] = useState([])
-    const [images, setImages] = useState([]);
     const[fullImg, setFullImg] = useState('')
     const[fullImgShow, setFullImgShow] = useState(false)
 
-    const likesRef = collection(db, "likes")
+    const [comments, setComments] = useState([]);
+    const [rating, setRating] = useState(0);
 
-    const addLike = async () =>{
+    const comentRef = collection(db, "comentsF");
+    const commentsDoc = query(comentRef,where("feedbackId","==", post.id))
+    const getComments = async () => {
+        const res = await getDocs(commentsDoc);
+        setComments(res.docs.map(el => ({...el.data(), id : el.id})))
+    }
 
-        if(user && !likes.some(el=> el.userId === user?.uid)) {
-            const data = {
-                userId: user?.uid,
-                userName: user?.displayName,
-                postId: post.id
+
+    useEffect(() =>{
+        getComments().catch(e => console.log(e))
+    },[post]);
+
+    useEffect(() =>{
+        if(comments.length> 0) {
+            const rat = comments.reduce((ac, cur) => cur.stars? +ac + +cur.stars : ac, 0)
+            const count = comments.filter(it => it.stars)
+            if(rat > 0) {
+                setRating(rat / count.length)
             }
-            await addDoc(likesRef, data);
-            await getLikes()
-        }else{
-            setValues(prev =>({
-                ...prev,
-                openAlert: true,
-                alertMassage: "You should authorize!"
-            }))
         }
-    }
-
-    const removeLike = async (id) =>{
-
-        const likeToDelete = doc(db, "likes", likes.find(el=> el.userId === user?.uid).id);
-        await deleteDoc(likeToDelete);
-        await getLikes()
-    }
+    }, [comments])
 
     const deleteDocument = async (id) =>{
         setValues(prev =>({
@@ -146,40 +167,14 @@ const Item = ({post}) =>{
 
     }
 
-    const likesDoc = query(likesRef,where("postId","==", post.id))
-    const getLikes = async () => {
-        const res = await getDocs(likesDoc);
-        setLikes(res.docs.map(el => ({...el.data(), id : el.id})))
-    }
 
-    useEffect(() =>{
-        getLikes()
-    },[]);
 
-    useEffect(() =>{
-        setLikesNames(likes.map(el => el.userName))
-    },[likes]);
-
-    useEffect(() =>{
-        if(post?.images){
-            getImages()
-        }
-
-    },[post]);
 
     const deleteImages = async () =>{
         for(let i = 0; i < post?.images?.length; i++){
-           await deleteObject(ref(storage, `${post?.images[i]}`));
+           await deleteObject(ref(storage, `${post?.images[i].metaData}`))
+               .catch(e =>console.log(e));
         }
-    }
-
-    const getImages = async () =>{
-        await setImages([])
-        for(let i = 0; i < post?.images?.length; i++){
-            const img = await getDownloadURL(ref(storage, `${post?.images[i]}`));
-             await setImages(prev => ([...prev, img]))
-        }
-        setImages(prev => ([...new Set(prev)]))
     }
 
     const editItem = (post) =>{
@@ -187,22 +182,11 @@ const Item = ({post}) =>{
         setValues(prev =>({
             ...prev,
             openDialog: true,
-            dialogComponent: <CreateItem edit={true} post={post} imagesToEdit={images}/>,
+            dialogComponent: <CreateItem edit={true} post={post} imagesToEdit={post?.images}/>,
             dialogTitle: "Редагувати Товар"
         }))
     }
 
-    const ToltipTitle = ({arr}) =>{
-        return (
-            <>
-                {arr.length > 0 ? arr.map(el =>(
-                    <p key={el}>{el}</p>
-                )):
-                    <p>No likes</p>
-                }
-            </>
-        )
-    }
 
     const handleFullImg = (src) =>{
         setFullImg(src);
@@ -214,27 +198,37 @@ const Item = ({post}) =>{
     }
 
 
+    const openCommentDialog = () => {
+        setValues(prev => ({
+            ...prev,
+            openDialog: true,
+            dialogComponent: <AddCommentComponent itemToRefresh={'refreshItemsData'} item={post}/>,
+            dialogTitle: "Додати Коментар"
+        }))
+    }
+
+
 
     return (
-        <div className={cl.box}>
+        <Paper elevation={6} className={cl.box}>
             <Backdrop style={{zIndex: "100",}}  open={fullImgShow} onClick={handleClose} >
-                <div style={{width: "80vw", height: "80vh"}}>
+                <div style={{width: "90vw", height: "80vh"}}>
                     <img src={fullImg} style={{height: "100%", width: "100%", objectFit: "contain"}} />
                 </div>
             </Backdrop>
             {user && checkAdmin(user?.uid) &&
-            <div>
-                <LightTooltip title={"Видалити Товар!"}>
-                    <IconButton onClick={() => deleteDocument(post)}>
-                        <BackspaceIcon/>
-                    </IconButton>
-                </LightTooltip>
-                <LightTooltip title={"Редагувати Товар"}>
-                    <IconButton onClick={() => editItem(post)}>
-                        <EditIcon/>
-                    </IconButton>
-                </LightTooltip>
-            </div>
+                <div>
+                    <LightTooltip title={"Видалити Товар!"}>
+                        <IconButton onClick={() => deleteDocument(post)}>
+                            <BackspaceIcon/>
+                        </IconButton>
+                    </LightTooltip>
+                    <LightTooltip title={"Редагувати Товар"}>
+                        <IconButton onClick={() => editItem(post)}>
+                            <EditIcon/>
+                        </IconButton>
+                    </LightTooltip>
+                </div>
             }
             <div className={cl.title}>
                 <p >
@@ -243,7 +237,7 @@ const Item = ({post}) =>{
             </div>
             {post?.discount &&
                 <div className={cl.discount}>
-                    <div style={{fontSize: "20px", color: "white"}}>
+                    <div className={cl.discountTitle}>
                         Знижка: {post?.discount}%
                     </div>
                 </div>
@@ -251,7 +245,7 @@ const Item = ({post}) =>{
 
 
             <div style={{padding: "10px"}}>
-                <CarouselComponent handleFullImg={handleFullImg} images={images}/>
+                <CarouselComponent handleFullImg={handleFullImg} images={post?.images}/>
             </div>
 
             <div>
@@ -274,39 +268,22 @@ const Item = ({post}) =>{
                 }
             </div>
 
+            {rating > 0 &&
+                <Rating name="read-only" value={rating} readOnly />
+            }
+            {comments.length >0 &&
+            <CommentsAccordeon itemToRefresh={'refreshItemsData'} comments={comments.sort((a,b) => a.date>b.date?1:-1)}/>
+            }
+
             <div className={cl.bottomBox}>
-                <div>
-                    {!likes.some(el => el.userId === user?.uid) &&
-                        <LightTooltip title={<ToltipTitle arr={likesNames}/>}>
-                            <IconButton size={"small"} onClick={addLike}>
-                                <ThumbUpAltIcon style={{color: "yellowgreen"}}/>
-                            </IconButton>
-                        </LightTooltip>
-                    }
-                    {likes.some(el => el.userId === user?.uid) &&
-                        <LightTooltip title={<ToltipTitle arr={likesNames}/>}>
-                            <IconButton size={"small"} onClick={removeLike}>
-                                <ThumbUpAltIcon style={{color: "blue"}}/>
-                            </IconButton>
-                        </LightTooltip>
-                    }
+                <div style={{padding:"0 0 10px 0"}}>
+                    <Button variant={"contained"} onClick={openCommentDialog}>
+                        Коментувати
+                    </Button>
                 </div>
-                <div>
-                    {likes.length> 0 &&
-                        <p>{likes.length}</p>
-                    }
-                </div>
-            </div>
-            <div className={cl.userBox}>
-                <Typography color={"primary"} style={{marginRight: "10px"}}>
-                    {post.userName}
-                </Typography>
-                {post.userImg &&
-                    <img src={post.userImg} alt={'icon'} className={cl.userImg} />
-                }
             </div>
 
-        </div>
+        </Paper>
     )
 }
 

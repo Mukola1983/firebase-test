@@ -4,12 +4,13 @@ import {
     getAuth, createUserWithEmailAndPassword,
     signInWithEmailAndPassword, sendSignInLinkToEmail
 } from "firebase/auth";
-import {auth, provider} from "../../firebase";
+import {auth, db, provider} from "../../firebase";
 import {Button} from "@material-ui/core";
 import {useAuthState} from "react-firebase-hooks/auth";
 import {AppContext} from "../../App";
 import {makeStyles} from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
+import {addDoc, collection, getDocs, query, where} from "firebase/firestore";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -51,45 +52,62 @@ const LogWithPassMail = ({login = false}) =>{
 
     const authT = getAuth()
 
-    const actionCodeSettings = {
-        // URL you want to redirect back to. The domain (www.example.com) for this
-        // URL must be in the authorized domains list in the Firebase Console.
-        url: 'https://test-01-dd84c.web.app',
-        // This must be true.
-        handleCodeInApp: true,
-        // iOS: {
-        //     bundleId: 'com.example.ios'
-        // },
-        // android: {
-        //     packageName: 'com.example.android',
-        //     installApp: true,
-        //     minimumVersion: '12'
-        // },
-        // dynamicLinkDomain: 'https://test-01-dd84c.web.app'
-    };
 
-    const createUser = async () =>{
-        setLoading(true)
-        const user = await createUserWithEmailAndPassword(authT, value.email, value.password)
-            .catch(error => {
-                console.log(error)
-                setValues(prev =>({
+
+    const createUser = async () => {
+        setLoading(true);
+
+        if(value.email && value.password && value.name) {
+            const user = await createUserWithEmailAndPassword(authT, value.email, value.password)
+                .catch(error => {
+                    console.log(error)
+                    setValues(prev => ({
+                        ...prev,
+                        openAlert: true,
+                        alertMassage: error.message
+                    }))
+                })
+
+            if (user) {
+                const data = {
+                    uiD: user?.user.uid,
+                    name: value?.name,
+                    photoURL: user?.user.photoURL,
+                    email: user?.user.email,
+                    phone: value?.phone,
+                    orders:[]
+                }
+
+                localStorage.setItem("activeUser", JSON.stringify(data));
+
+                const userRef = collection(db, "users");
+                await addDoc(userRef, data)
+                    .catch(e => {
+                        console.log(e)
+                        setValues(prev => ({
+                            ...prev,
+                            openAlert: true,
+                            alertMassage: e.message
+                        }))
+                    });
+
+                setValues(prev => ({
                     ...prev,
-                    openAlert: true,
-                    alertMassage: error.message
+                    openDialog: false,
+                    refreshOrders: true
                 }))
-            })
-        if(user){
+            }
+        }else{
             setValues(prev =>({
                 ...prev,
-                openDialog: false,
-                refreshOrders:true
+                openAlert: true,
+                alertMassage: "Введіть імя логін і е-пошту!"
             }))
         }
 
         setLoading(false)
     }
-    const signeUser = async () =>{
+    const signUser = async () =>{
         setLoading(true)
         const user = await signInWithEmailAndPassword(authT, value.email, value.password)
             .catch(e => {
@@ -100,7 +118,17 @@ const LogWithPassMail = ({login = false}) =>{
                     alertMassage: e.message
                 }))
             })
+
         if(user){
+            const userRef = collection(db, "users");
+            const userDoc = query(userRef, where("uiD", "==", user.user.uid))
+            const res = await getDocs(userDoc).catch(e => console.log(e));
+
+            const existUser = res.docs.map(el => ({...el.data(), id : el.id}))
+
+            if(existUser?.length > 0){
+                localStorage.setItem("activeUser", JSON.stringify(existUser[0]));
+            }
             setValues(prev =>({
                 ...prev,
                 openDialog: false,
@@ -111,6 +139,16 @@ const LogWithPassMail = ({login = false}) =>{
     }
     return (
         <Paper className={cl.root}>
+            {!login &&
+                <div className={cl.input}>
+                    <TextInputComponent value={value} setVal={handleValue} name={'name'} label={"Прізвище, імя*"}/>
+                </div>
+            }
+            {!login &&
+                <div className={cl.input}>
+                    <TextInputComponent type={"phone"} value={value} setVal={handleValue} name={'phone'} label={"Телефон"} />
+                </div>
+            }
             <div className={cl.input}>
                 <TextInputComponent type={"email"} value={value} setVal={handleValue} name={'email'} label={"Email*"} />
             </div>
@@ -122,7 +160,7 @@ const LogWithPassMail = ({login = false}) =>{
                     <Button variant={"contained"} onClick={createUser} disabled={loadingF}>Зареєструватись</Button>
                 }
                 {login &&
-                    <Button variant={"contained"} onClick={signeUser} disabled={loadingF}>Увійти</Button>
+                    <Button variant={"contained"} onClick={signUser} disabled={loadingF}>Увійти</Button>
                 }
             </div>
         </Paper>

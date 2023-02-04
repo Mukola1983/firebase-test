@@ -3,13 +3,14 @@ import {Button, Paper, TextField, Typography} from "@material-ui/core";
 import {auth, provider, db, storage} from "../../firebase";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import {addDoc,doc, updateDoc,collection} from "firebase/firestore"
-import {deleteObject, ref, uploadBytes} from "firebase/storage";
+import {deleteObject, getDownloadURL, ref, uploadBytes} from "firebase/storage";
 import {v4} from "uuid";
 import {AppContext} from "../../App";
 import TextInputComponent from "../../shared/inputs/TextInputComponent";
 import {makeStyles} from "@material-ui/core/styles";
 import ImageItem from "./ImageItem";
 import moment from "moment";
+import {addImageHandler, imageRefObject, removeImageData, setEditImages} from "../../shared/Utils";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -62,52 +63,19 @@ const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
     useEffect(()=>{
         if(edit && post){
             setValue(post);
-            setEditImages(imagesToEdit)
+            setEditImages(imagesToEdit, post, setImages,setImgToSend)
         }
     },[])
 
-    const setEditImages = async (imgs) =>{
-        for(let i = 0; i < imgs.length; i++) {
-            const id = v4()
-            await setImages(prev => ([...prev, {img: imgs[i], id: id}]));
-            await setImgToSend(prev => ([...prev, {img: post?.images[i], id:id}]));
-
-        }
-    }
 
     const removeImg = async (id) =>{
         if(edit){
             const del = imgToSend.find(el =>el.id === id)
-            await deleteObject(ref(storage, del.img));
+            await deleteObject(ref(storage, del.img.metaData));
         }
-        const imgSend = imgToSend.filter(el => el.id !== id)
-        const imgToShow = images.filter(el => el.id !== id)
-        setImgToSend(imgSend);
-        setImages(imgToShow);
+        await removeImageData(imgToSend, images, setImgToSend,setImages,createPost, id)
     }
 
-    const  addImageHandler = (e) => {
-        const img = e.target.files[0];
-        if(img.size < 1000000) {
-            const id = v4()
-            let url = URL.createObjectURL(img);
-            // setImgToSend(prev => ([...prev, img]));
-            setImgToSend(prev => ([...prev, {img: img, id:id}]));
-
-            setImages(prev => ([...prev, {img:url, id:id}]));
-        }else{
-            setValues(prev =>({
-                ...prev,
-                openAlert: true,
-                alertMassage: "Image should be less 1mb!"
-            }))
-        }
-    }
-
-    // useEffect(() =>{
-    //     console.log(imgToSend)
-    //     console.log(images)
-    // },[images])
 
     const handleVal = (name, val) => {
         if(!check){
@@ -122,20 +90,18 @@ const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
     const postsRef = collection(db, "items")
 
 
-    const createPost = async () => {
-        setLoad(true)
+    const createPost = async (imgToSendLoc) => {
         let metadata = [];
-        for(let i = 0; i < imgToSend.length; i++ ){
-            if(imgToSend[i].img && typeof imgToSend[i].img==="object") {
-                const imageRef = ref(storage, `images/${imgToSend[i].img.name + v4()}`);
-                const imgRes = await uploadBytes(imageRef, imgToSend[i].img);
-                metadata.push(imgRes.metadata.fullPath)
+        for(let i = 0; i < imgToSendLoc.length; i++ ){
+            if(imgToSendLoc[i].img &&  !imgToSendLoc[i].img.metaData) {
+
+                const imgData = await imageRefObject('postImages', imgToSendLoc[i])
+
+                metadata.push(imgData)
             }else{
-                metadata.push(imgToSend[i].img)
+                metadata.push(imgToSendLoc[i].img)
             }
         }
-
-
 
         if(value?.title && value?.description){
             const data = {
@@ -157,6 +123,11 @@ const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
             }
         }
 
+    }
+
+    const createPost_2 = async () =>{
+        setLoad(true)
+        await createPost(imgToSend)
         setLoad(false)
         setValues(prev =>({
             ...prev,
@@ -164,6 +135,7 @@ const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
             refreshItemsData: true
         }))
     }
+
 
 
     return (
@@ -174,7 +146,7 @@ const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
                         <input
                             style={{display: "none"}}
                             type="file"
-                            onChange={(e)=> addImageHandler(e)}
+                            onChange={(e)=> addImageHandler(e, setImgToSend, setImages,setValues)}
                             ref={reFF}
                         />
                         <Button onClick={()=> openFile()}
@@ -207,7 +179,7 @@ const CreateItem = ({edit=false, post=null, imagesToEdit=[]}) => {
                         <TextInputComponent type={"number"} style={cl.input} value={value}  name={'discount'} label={"Знижка"} setVal={handleVal} />
                     </div>
                     <div>
-                        <Button disabled={load} variant={"contained"} color={"primary"} onClick={createPost}>
+                        <Button disabled={load} variant={"contained"} color={"primary"} onClick={createPost_2}>
                             {edit ?  "Редагувати" : "Створити"}
                         </Button>
                     </div>

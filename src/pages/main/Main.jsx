@@ -40,11 +40,13 @@ const Main = () => {
     // const [posts, setPosts] = useState([])
 
     useEffect(() =>{
-        handleGetDoc(setValues,"orders", "orders");
-        setValues(prev =>({
-            ...prev,
-            refreshOrders: false
-        }))
+        if(user && checkAdmin(user?.uid)) {
+            handleGetDoc(setValues, "orders", "orders");
+            setValues(prev => ({
+                ...prev,
+                refreshOrders: false
+            }))
+        }
     },[values.refreshOrders])
 
 

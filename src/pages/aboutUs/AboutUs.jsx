@@ -12,6 +12,7 @@ import PostItem from "./components/PostItem";
 import Backdrop from "@material-ui/core/Backdrop";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import {checkAdmin, handleGetDoc} from "../../shared/Utils";
+import Contacts from "./components/contacts/Contacts";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -46,9 +47,7 @@ const AboutUs = () =>{
 
 
 
-
-
-    const openDialog = () =>{
+    const openDialog = () => {
         setValues(prev =>({
             ...prev,
             openDialog: true,
@@ -58,6 +57,7 @@ const AboutUs = () =>{
     }
     return (
         <div className={cl.root}>
+            <Contacts/>
             {user && checkAdmin(user?.uid) &&
                 <Button variant={"contained"} color={"primary"} onClick={openDialog}>
                     Додати Статтю

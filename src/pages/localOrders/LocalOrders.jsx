@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from "react";
 import OrderItem from "./components/OrderItem";
 import Typography from "@material-ui/core/Typography";
+import {collection, getDocs, query, where} from "firebase/firestore";
+import {db} from "../../firebase";
 
 
 
@@ -8,10 +10,26 @@ const LocalOrders = () => {
 
     const[orders, setOrders] = useState([])
 
+    const activeUser = localStorage.getItem("activeUser")? JSON.parse(localStorage.getItem("activeUser")):null
+    const ordersLoc = async (activeUser) =>{
+        if(activeUser) {
+            const userRef = collection(db, "users");
+            const userDoc = query(userRef, where("uiD", "==", activeUser['uiD']))
+            const res = await getDocs(userDoc).catch(e => console.log(e));
+
+            return res.docs.map(el => ({...el.data(), id: el.id}))
+        }
+
+    }
+
     useEffect(() =>{
-        const ordersLS = JSON.parse(localStorage.getItem("localOrders"));
-        if(ordersLS){
-            setOrders(ordersLS);
+        if(activeUser) {
+            ordersLoc(activeUser).then(res => {
+
+                if (res) {
+                    setOrders(res?.[0].orders);
+                }
+            })
         }
     },[])
     return (

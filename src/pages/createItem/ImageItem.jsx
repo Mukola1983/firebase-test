@@ -28,7 +28,7 @@ const ImageItem = ({image, delHandle}) =>{
     const cl = useStyles()
     return (
             <div className={cl.imgBox}>
-                <img src={image.img} alt={'icon'} className={cl.img} />
+                <img src={image.img.path || image.img.url} alt={'icon'} className={cl.img} />
                 {/*<IconButton onClick={()=>delHandle(image.id)} className={cl.icon}>*/}
                     <DeleteForeverIcon color={"error"} onClick={()=>delHandle(image.id)} className={cl.icon}/>
                 {/*</IconButton>*/}
